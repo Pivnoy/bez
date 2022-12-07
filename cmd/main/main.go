@@ -2,14 +2,11 @@ package main
 
 import (
 	config2 "bez/config"
+	"bez/internal/app"
 	"context"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/googleapi"
-	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
@@ -77,36 +74,43 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
+	//
+	//ga := usecase.NewGoogleConfigUseCase(cfg.CredentialsBin)
+	//fmt.Println(ga.CreateRegLink())
+	//var authCode string
+	//if _, err := fmt.Scan(&authCode); err != nil {
+	//	log.Fatalf("Unable to read authorization code %v", err)
+	//}
+	//client, err := ga.CreateClient(context.Background(), authCode)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
+	//about := drive.NewAboutService(srv)
+	//res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//fmt.Println(res.User)
+	//if err != nil {
+	//	log.Fatalf("Unable to retrieve Drive client: %v", err)
+	//}
+	//
+	//r, err := srv.Files.List().PageSize(10).
+	//	Fields("nextPageToken, files(id, name)").Do()
+	//if err != nil {
+	//	log.Fatalf("Unable to retrieve files: %v", err)
+	//}
+	//fmt.Println("Files:")
+	//if len(r.Files) == 0 {
+	//	fmt.Println("No files found.")
+	//} else {
+	//	for _, i := range r.Files {
+	//		fmt.Printf("%s (%s)\n", i.Name, i.Id)
+	//	}
+	//}
 
-	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(cfg.CredentialsBin, drive.DriveMetadataReadonlyScope)
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(config)
-
-	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
-	about := drive.NewAboutService(srv)
-	res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(res.User)
-	if err != nil {
-		log.Fatalf("Unable to retrieve Drive client: %v", err)
-	}
-
-	r, err := srv.Files.List().PageSize(10).
-		Fields("nextPageToken, files(id, name)").Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve files: %v", err)
-	}
-	fmt.Println("Files:")
-	if len(r.Files) == 0 {
-		fmt.Println("No files found.")
-	} else {
-		for _, i := range r.Files {
-			fmt.Printf("%s (%s)\n", i.Name, i.Id)
-		}
-	}
+	fmt.Println(cfg.AppPort)
+	app.Run(cfg)
 }
