@@ -1,13 +1,15 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 type Config struct {
 	CredentialsBin []byte
 }
 
 func NewConfig() (*Config, error) {
-	b, err := os.ReadFile("credentials.json")
+	b, err := os.ReadFile("./config/credentials.json")
 	if err != nil {
 		return nil, nil
 	}

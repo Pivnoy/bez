@@ -1,12 +1,15 @@
 package main
 
 import (
-	"bez/config"
-	"bez/internal/app"
+	config2 "bez/config"
 	"context"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
@@ -69,50 +72,41 @@ func saveToken(path string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-//func main() {
-//	ctx := context.Background()
-//	b, err := os.ReadFile("credentials.json")
-//	if err != nil {
-//		log.Fatalf("Unable to read client secret file: %v", err)
-//	}
-//
-//	// If modifying these scopes, delete your previously saved token.json.
-//	config, err := google.ConfigFromJSON(b, drive.DriveMetadataReadonlyScope)
-//	if err != nil {
-//		log.Fatalf("Unable to parse client secret file to config: %v", err)
-//	}
-//	client := getClient(config)
-//
-//	srv, err := drive.NewService(ctx, option.WithHTTPClient(client))
-//	about := drive.NewAboutService(srv)
-//	res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	fmt.Println(res.User)
-//	if err != nil {
-//		log.Fatalf("Unable to retrieve Drive client: %v", err)
-//	}
-//
-//	r, err := srv.Files.List().PageSize(10).
-//		Fields("nextPageToken, files(id, name)").Do()
-//	if err != nil {
-//		log.Fatalf("Unable to retrieve files: %v", err)
-//	}
-//	fmt.Println("Files:")
-//	if len(r.Files) == 0 {
-//		fmt.Println("No files found.")
-//	} else {
-//		for _, i := range r.Files {
-//			fmt.Printf("%s (%s)\n", i.Name, i.Id)
-//		}
-//	}
-//}
-
 func main() {
-	cfg, err := config.NewConfig()
+	cfg, err := config2.NewConfig()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-	app.Run(cfg)
+
+	// If modifying these scopes, delete your previously saved token.json.
+	config, err := google.ConfigFromJSON(cfg.CredentialsBin, drive.DriveMetadataReadonlyScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	client := getClient(config)
+
+	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
+	about := drive.NewAboutService(srv)
+	res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.User)
+	if err != nil {
+		log.Fatalf("Unable to retrieve Drive client: %v", err)
+	}
+
+	r, err := srv.Files.List().PageSize(10).
+		Fields("nextPageToken, files(id, name)").Do()
+	if err != nil {
+		log.Fatalf("Unable to retrieve files: %v", err)
+	}
+	fmt.Println("Files:")
+	if len(r.Files) == 0 {
+		fmt.Println("No files found.")
+	} else {
+		for _, i := range r.Files {
+			fmt.Printf("%s (%s)\n", i.Name, i.Id)
+		}
+	}
 }
