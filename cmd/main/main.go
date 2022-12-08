@@ -3,16 +3,20 @@ package main
 import (
 	config2 "bez/config"
 	"bez/internal/app"
+	"bez/internal/usecase"
 	"context"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/oauth2"
+	"google.golang.org/api/drive/v2"
+	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
 )
 
-//https://developers.google.com/drive/api/v2/reference/about/get#go
+// https://developers.google.com/drive/api/v2/reference/about/get#go
 // Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
@@ -74,42 +78,32 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-	//
-	//ga := usecase.NewGoogleConfigUseCase(cfg.CredentialsBin)
-	//fmt.Println(ga.CreateRegLink())
-	//var authCode string
-	//if _, err := fmt.Scan(&authCode); err != nil {
-	//	log.Fatalf("Unable to read authorization code %v", err)
-	//}
-	//client, err := ga.CreateClient(context.Background(), authCode)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
-	//about := drive.NewAboutService(srv)
-	//res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println(res.User)
-	//if err != nil {
-	//	log.Fatalf("Unable to retrieve Drive client: %v", err)
-	//}
-	//
-	//r, err := srv.Files.List().PageSize(10).
-	//	Fields("nextPageToken, files(id, name)").Do()
-	//if err != nil {
-	//	log.Fatalf("Unable to retrieve files: %v", err)
-	//}
-	//fmt.Println("Files:")
-	//if len(r.Files) == 0 {
-	//	fmt.Println("No files found.")
-	//} else {
-	//	for _, i := range r.Files {
-	//		fmt.Printf("%s (%s)\n", i.Name, i.Id)
-	//	}
-	//}
+
+	ga := usecase.NewGoogleAPIUseCase(cfg.CredentialsBin)
+	fmt.Println(ga.CreateRegLink())
+	var authCode string
+	if _, err := fmt.Scan(&authCode); err != nil {
+		log.Fatalf("Unable to read authorization code %v", err)
+	}
+	token, err := ga.CreateUserToken(context.Background(), authCode)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := ga.CreateClient(context.Background(), token)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	srv, err := drive.NewService(context.Background(), option.WithHTTPClient(client))
+	about := drive.NewAboutService(srv)
+	res, err := about.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.User)
+	if err != nil {
+		log.Fatalf("Unable to retrieve Drive client: %v", err)
+	}
 
 	fmt.Println(cfg.AppPort)
 	app.Run(cfg)

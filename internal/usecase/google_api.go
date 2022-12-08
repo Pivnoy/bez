@@ -32,13 +32,17 @@ func (c *GoogleAPIUseCase) CreateRegLink() string {
 	return c.config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 }
 
-// CreateClient add url regex
-func (c *GoogleAPIUseCase) CreateClient(ctx context.Context, authCode string) (*http.Client, error) {
+func (c *GoogleAPIUseCase) CreateUserToken(ctx context.Context, authCode string) (*oauth2.Token, error) {
 	token, err := c.config.Exchange(ctx, authCode)
 	if err != nil {
 		log.Println("cannot create token")
 		return nil, err
 	}
+	return token, nil
+}
+
+// CreateClient add url regex
+func (c *GoogleAPIUseCase) CreateClient(ctx context.Context, token *oauth2.Token) (*http.Client, error) {
 	client := c.config.Client(ctx, token)
 	return client, nil
 }

@@ -1,9 +1,11 @@
 package entity
 
-import "gorm.io/gorm"
+import (
+	"github.com/google/uuid"
+)
 
 type User struct {
-	gorm.Model
-	Email   string `json:"email"`
-	Refresh string `json:"refresh"`
+	ID      uuid.UUID `json:"id"`
+	Email   string    `json:"email"`
+	Refresh string    `json:"refresh_token"`
 }

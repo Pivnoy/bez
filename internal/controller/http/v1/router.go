@@ -2,9 +2,9 @@ package v1
 
 import (
 	"bez/internal/usecase"
-	"github.com/go-chi/chi/v5"
+	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(router *chi.Mux, googleAPI usecase.GoogleAPI) {
-	newAuthRoutes(router, googleAPI)
+func NewRouter(handler *gin.Engine, googleAPI usecase.GoogleAPI, driveAPI usecase.DriveAPI, us usecase.User) {
+	newAuthRoutes(handler, googleAPI, driveAPI, us)
 }

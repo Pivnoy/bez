@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	AppPort        string `env:"APP_PORT" envDefault:"9000"`
+	PostgresUrl    string `env:"POSTGRES_URL" envDefault:"postgresql://postgres:postgres@psql:5432/postgres"`
 	CredentialsBin []byte
 }
 

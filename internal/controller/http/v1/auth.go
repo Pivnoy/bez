@@ -2,33 +2,87 @@ package v1
 
 import (
 	"bez/internal/usecase"
-	"fmt"
-	"github.com/go-chi/chi/v5"
+	"github.com/gin-gonic/gin"
 	"net/http"
+	"regexp"
 )
 
 type authRoutes struct {
 	googleAPI usecase.GoogleAPI
+	driveAPI  usecase.DriveAPI
+
+	userUseCase usecase.User
 }
 
-func newAuthRoutes(router *chi.Mux, googleAPI usecase.GoogleAPI) {
+func newAuthRoutes(handler *gin.Engine, googleAPI usecase.GoogleAPI, driveAPI usecase.DriveAPI, userUseCase usecase.User) {
 
-	a := authRoutes{googleAPI: googleAPI}
+	a := authRoutes{googleAPI: googleAPI, driveAPI: driveAPI, userUseCase: userUseCase}
 
-	router.Get("/auth", a.getAuthLink)
-	router.Post("/auth", a.addClientToken)
+	handler.GET("/auth", a.getAuthLink)
+	handler.POST("/auth", a.addClientToken)
 }
 
-func (a *authRoutes) getAuthLink(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	str := a.googleAPI.CreateRegLink()
-	fmt.Println(str)
-	w.Write([]byte(str))
+type authLinkResponse struct {
+	Link string `json:"link"`
+}
+
+func (a *authRoutes) getAuthLink(c *gin.Context) {
+	c.JSON(http.StatusOK, authLinkResponse{Link: a.googleAPI.CreateRegLink()})
 }
 
 // about info
 // displayName, picture, email
-func (a *authRoutes) addClientToken(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Pidarasy blyat 4")
+
+type clientTokenRequest struct {
+	URL string `json:"url"`
+}
+
+type clientTokenResponse struct {
+	DisplayName string `json:"displayName"`
+	Picture     string `json:"picture"`
+	Email       string `json:"email"`
+}
+
+func (a *authRoutes) addClientToken(c *gin.Context) {
+	var cl clientTokenRequest
+	if err := c.ShouldBindJSON(&cl); err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	match := regexp.MustCompile("state=(.*)&code=(4\\/.*)&scope=(.*)")
+	res := match.FindStringSubmatch(cl.URL)
+	if len(res) != 4 {
+		errorResponse(c, http.StatusBadRequest, "cannot parse url")
+		return
+	}
+	token, err := a.googleAPI.CreateUserToken(c.Request.Context(), res[3])
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	clientHTTP, err := a.googleAPI.CreateClient(c.Request.Context(), token)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = a.driveAPI.UserDrive(c.Request.Context(), clientHTTP)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	nm, err := a.driveAPI.GetPersonalInfo()
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = a.userUseCase.CreateUser(c.Request.Context(), nm.Email, token.RefreshToken)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, clientTokenResponse{
+		DisplayName: nm.DisplayName,
+		Picture:     nm.Picture,
+		Email:       nm.Email,
+	})
 }

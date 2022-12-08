@@ -5,15 +5,17 @@ import (
 	v1 "bez/internal/controller/http/v1"
 	"bez/internal/usecase"
 	"bez/pkg/httpserver"
-	"github.com/go-chi/chi/v5"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Run(cfg *config.Config) {
-	router := chi.NewRouter()
+
+	router := gin.New()
 
 	ga := usecase.NewGoogleAPIUseCase(cfg.CredentialsBin)
 
