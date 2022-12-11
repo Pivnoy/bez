@@ -2,11 +2,13 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 type GoogleAPIUseCase struct {
@@ -33,7 +35,11 @@ func (c *GoogleAPIUseCase) CreateRegLink() string {
 }
 
 func (c *GoogleAPIUseCase) CreateUserToken(ctx context.Context, authCode string) (*oauth2.Token, error) {
-	token, err := c.config.Exchange(ctx, authCode)
+	authCodeURL, err := url.QueryUnescape(authCode)
+	if err != nil {
+		return nil, fmt.Errorf("cannot unescape URL")
+	}
+	token, err := c.config.Exchange(ctx, authCodeURL)
 	if err != nil {
 		log.Println("cannot create token")
 		return nil, err

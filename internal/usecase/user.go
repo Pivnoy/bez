@@ -15,6 +15,6 @@ func NewUserUseCase(repo UserRp) *UserUseCase {
 }
 
 func (u *UserUseCase) CreateUser(ctx context.Context, email, token string) error {
-	us := entity.User{ID: uuid.New(), Email: email, Refresh: token}
+	us := entity.User{ID: uuid.New(), Email: email, RefreshToken: token}
 	return u.repo.StoreUser(ctx, us)
 }

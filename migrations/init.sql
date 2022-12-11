@@ -1,8 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-drop table if exists "user", service_account, file, file_relation cascade;
+drop table if exists "users", service_account, file, file_relation cascade;
 
-create table if not exists "user" (
+create table if not exists "users" (
     id uuid primary key default uuid_generate_v4(),
     email text unique not null,
     refresh_token text unique not null

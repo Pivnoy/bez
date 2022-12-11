@@ -25,5 +25,6 @@ type (
 	DriveAPI interface {
 		UserDrive(ctx context.Context, client *http.Client) error
 		GetPersonalInfo() (*entity.PersonalInfo, error)
+		GetFileList()
 	}
 )

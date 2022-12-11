@@ -4,7 +4,11 @@ import (
 	"bez/config"
 	v1 "bez/internal/controller/http/v1"
 	"bez/internal/usecase"
+	"bez/internal/usecase/repo"
 	"bez/pkg/httpserver"
+	"fmt"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
 	"os"
 	"os/signal"
@@ -15,17 +19,27 @@ import (
 
 func Run(cfg *config.Config) {
 
-	router := gin.New()
+	pg := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+		cfg.Host, cfg.User, cfg.Password, cfg.DbName, cfg.Port)
+
+	db, err := gorm.Open(postgres.Open(pg), &gorm.Config{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	usRp := repo.NewUserRepo(db)
 
 	ga := usecase.NewGoogleAPIUseCase(cfg.CredentialsBin)
+	dr := usecase.NewDriveAPI()
+	us := usecase.NewUserUseCase(usRp)
 
-	v1.NewRouter(router, ga)
+	router := gin.New()
+	v1.NewRouter(router, ga, dr, us)
 
 	serv := httpserver.New(router, httpserver.Port(cfg.AppPort))
 	interruption := make(chan os.Signal, 1)
 	signal.Notify(interruption, os.Interrupt, syscall.SIGTERM)
-
-	_, err := os.Getgroups()
 
 	select {
 	case s := <-interruption:

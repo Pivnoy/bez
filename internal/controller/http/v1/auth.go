@@ -2,6 +2,7 @@ package v1
 
 import (
 	"bez/internal/usecase"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -23,11 +24,11 @@ func newAuthRoutes(handler *gin.Engine, googleAPI usecase.GoogleAPI, driveAPI us
 }
 
 type authLinkResponse struct {
-	Link string `json:"link"`
+	URL string `json:"url"`
 }
 
 func (a *authRoutes) getAuthLink(c *gin.Context) {
-	c.JSON(http.StatusOK, authLinkResponse{Link: a.googleAPI.CreateRegLink()})
+	c.JSON(http.StatusOK, authLinkResponse{URL: a.googleAPI.CreateRegLink()})
 }
 
 // about info
@@ -49,13 +50,14 @@ func (a *authRoutes) addClientToken(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	match := regexp.MustCompile("state=(.*)&code=(4\\/.*)&scope=(.*)")
+	fmt.Println(cl)
+	match := regexp.MustCompile("code=(.*)&")
 	res := match.FindStringSubmatch(cl.URL)
-	if len(res) != 4 {
+	if len(res) != 2 {
 		errorResponse(c, http.StatusBadRequest, "cannot parse url")
 		return
 	}
-	token, err := a.googleAPI.CreateUserToken(c.Request.Context(), res[3])
+	token, err := a.googleAPI.CreateUserToken(c.Request.Context(), res[1])
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -65,6 +67,7 @@ func (a *authRoutes) addClientToken(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	defer clientHTTP.CloseIdleConnections()
 	err = a.driveAPI.UserDrive(c.Request.Context(), clientHTTP)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, err.Error())

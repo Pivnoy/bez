@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	ID      uuid.UUID `json:"id"`
-	Email   string    `json:"email"`
-	Refresh string    `json:"refresh_token"`
+	ID           uuid.UUID `gorm:"primaryKey" json:"id"`
+	Email        string    `gorm:"email" json:"email"`
+	RefreshToken string    `gorm:"refresh_token" json:"refresh_token"`
 }
