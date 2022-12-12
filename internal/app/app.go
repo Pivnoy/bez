@@ -42,7 +42,7 @@ func Run(cfg *config.Config) {
 	}
 
 	router := gin.New()
-	v1.NewRouter(router, ga, dr, us)
+	v1.NewRouter(router, ga, dr, us, sr, fl)
 
 	serv := httpserver.New(router, httpserver.Port(cfg.AppPort))
 	interruption := make(chan os.Signal, 1)

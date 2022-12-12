@@ -34,7 +34,7 @@ func (d *DriveAPIUseCase) GetPersonalInfo(srv *drive.Service) (*entity.PersonalI
 }
 
 func (d *DriveAPIUseCase) GetFileList(srv *drive.Service) ([]*drive.File, error) {
-	fl, err := srv.Files.List().Fields("files(id, name)").Do()
+	fl, err := srv.Files.List().Fields("files(id, name, mimeType, webContentLink, webViewLink)").Do()
 	if err != nil {
 		return nil, fmt.Errorf("cannot get files: %v", err)
 	}

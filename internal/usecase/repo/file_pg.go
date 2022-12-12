@@ -16,9 +16,9 @@ func NewFileTorrentRepo(pg *postgres.Postgres) *FileTorrentRepo {
 }
 
 func (f *FileTorrentRepo) StoreFile(ctx context.Context, fl entity.FileTorrent) error {
-	query := `INSERT INTO file(id, file_name, file_type, file_id, count, owner_email) VALUES($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO file(id, file_name, file_type, file_id, count, owner_email, download_url, preview_url) VALUES($1, $2, $3, $4, $5, $6, $7, $8)`
 
-	rows, err := f.Pool.Query(ctx, query, fl.ID, fl.FileName, fl.FileType, fl.FileID, fl.Count, fl.OwnerEmail)
+	rows, err := f.Pool.Query(ctx, query, fl.ID, fl.FileName, fl.FileType, fl.FileID, fl.Count, fl.OwnerEmail, fl.DownloadURL, fl.PreviewURL)
 	if err != nil {
 		return fmt.Errorf("cannot execute query: %v", err)
 	}
@@ -27,7 +27,7 @@ func (f *FileTorrentRepo) StoreFile(ctx context.Context, fl entity.FileTorrent) 
 }
 
 func (f *FileTorrentRepo) GetFileListByOwner(ctx context.Context, owner string) ([]entity.FileTorrent, error) {
-	query := `SELECT * FROM file WHERE owner = $1`
+	query := `SELECT * FROM file WHERE owner_email = $1`
 
 	rows, err := f.Pool.Query(ctx, query, owner)
 	if err != nil {
@@ -44,7 +44,9 @@ func (f *FileTorrentRepo) GetFileListByOwner(ctx context.Context, owner string) 
 			&fl.FileType,
 			&fl.FileID,
 			&fl.Count,
-			&fl.OwnerEmail)
+			&fl.OwnerEmail,
+			&fl.DownloadURL,
+			&fl.PreviewURL)
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse file torrent: %v", err)
 		}

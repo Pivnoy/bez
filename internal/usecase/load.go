@@ -49,12 +49,14 @@ func (l *LoadUseCase) Preload(ctx context.Context) error {
 		}
 		for _, vl := range flLs {
 			fileStorage = append(fileStorage, entity.FileTorrent{
-				ID:         uuid.New(),
-				FileName:   vl.Name,
-				FileType:   vl.MimeType,
-				FileID:     vl.Id,
-				Count:      0,
-				OwnerEmail: personal.Email})
+				ID:          uuid.New(),
+				FileName:    vl.Name,
+				FileType:    vl.MimeType,
+				FileID:      vl.Id,
+				Count:       0,
+				OwnerEmail:  personal.Email,
+				DownloadURL: vl.WebContentLink,
+				PreviewURL:  vl.WebViewLink})
 		}
 	}
 	fmt.Println(len(fileStorage))
@@ -64,6 +66,5 @@ func (l *LoadUseCase) Preload(ctx context.Context) error {
 			return err
 		}
 	}
-	fmt.Println("done")
 	return nil
 }
