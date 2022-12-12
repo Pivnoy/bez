@@ -10,25 +10,18 @@ import (
 	"net/http"
 )
 
-type DriveAPIUseCase struct {
-	srv *drive.Service
-}
+type DriveAPIUseCase struct{}
 
 func NewDriveAPI() *DriveAPIUseCase {
 	return &DriveAPIUseCase{}
 }
 
-func (d *DriveAPIUseCase) UserDrive(ctx context.Context, client *http.Client) error {
-	srv, err := drive.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		return fmt.Errorf("cannot create drive service: %v", err)
-	}
-	d.srv = srv
-	return nil
+func (d *DriveAPIUseCase) UserDrive(ctx context.Context, client *http.Client) (*drive.Service, error) {
+	return drive.NewService(ctx, option.WithHTTPClient(client))
 }
 
-func (d *DriveAPIUseCase) GetPersonalInfo() (*entity.PersonalInfo, error) {
-	aboutSrv := drive.NewAboutService(d.srv)
+func (d *DriveAPIUseCase) GetPersonalInfo(srv *drive.Service) (*entity.PersonalInfo, error) {
+	aboutSrv := drive.NewAboutService(srv)
 	res, err := aboutSrv.Get().Do(googleapi.QueryParameter("fields", "user,storageQuota"))
 	if err != nil {
 		return nil, fmt.Errorf("cannot get about user info: %v", err)

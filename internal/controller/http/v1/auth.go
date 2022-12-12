@@ -2,7 +2,6 @@ package v1
 
 import (
 	"bez/internal/usecase"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
@@ -31,9 +30,6 @@ func (a *authRoutes) getAuthLink(c *gin.Context) {
 	c.JSON(http.StatusOK, authLinkResponse{URL: a.googleAPI.CreateRegLink()})
 }
 
-// about info
-// displayName, picture, email
-
 type clientTokenRequest struct {
 	URL string `json:"url"`
 }
@@ -50,7 +46,6 @@ func (a *authRoutes) addClientToken(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	fmt.Println(cl)
 	match := regexp.MustCompile("code=(.*)&")
 	res := match.FindStringSubmatch(cl.URL)
 	if len(res) != 2 {
@@ -68,12 +63,12 @@ func (a *authRoutes) addClientToken(c *gin.Context) {
 		return
 	}
 	defer clientHTTP.CloseIdleConnections()
-	err = a.driveAPI.UserDrive(c.Request.Context(), clientHTTP)
+	dr, err := a.driveAPI.UserDrive(c.Request.Context(), clientHTTP)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	nm, err := a.driveAPI.GetPersonalInfo()
+	nm, err := a.driveAPI.GetPersonalInfo(dr)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, err.Error())
 		return

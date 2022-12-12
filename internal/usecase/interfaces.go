@@ -4,6 +4,7 @@ import (
 	"bez/internal/entity"
 	"context"
 	"golang.org/x/oauth2"
+	"google.golang.org/api/drive/v3"
 	"net/http"
 )
 
@@ -23,8 +24,7 @@ type (
 	}
 
 	DriveAPI interface {
-		UserDrive(ctx context.Context, client *http.Client) error
-		GetPersonalInfo() (*entity.PersonalInfo, error)
-		GetFileList()
+		UserDrive(ctx context.Context, client *http.Client) (*drive.Service, error)
+		GetPersonalInfo(*drive.Service) (*entity.PersonalInfo, error)
 	}
 )

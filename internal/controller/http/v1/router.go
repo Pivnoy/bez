@@ -7,4 +7,5 @@ import (
 
 func NewRouter(handler *gin.Engine, googleAPI usecase.GoogleAPI, driveAPI usecase.DriveAPI, us usecase.User) {
 	newAuthRoutes(handler, googleAPI, driveAPI, us)
+	newFilesRoutes(handler)
 }

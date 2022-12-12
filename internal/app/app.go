@@ -6,9 +6,7 @@ import (
 	"bez/internal/usecase"
 	"bez/internal/usecase/repo"
 	"bez/pkg/httpserver"
-	"fmt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"bez/pkg/postgres"
 	"log"
 	"os"
 	"os/signal"
@@ -19,16 +17,13 @@ import (
 
 func Run(cfg *config.Config) {
 
-	pg := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		cfg.Host, cfg.User, cfg.Password, cfg.DbName, cfg.Port)
-
-	db, err := gorm.Open(postgres.Open(pg), &gorm.Config{})
+	pg, err := postgres.New(cfg)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	usRp := repo.NewUserRepo(db)
+	usRp := repo.NewUserRepo(pg)
 
 	ga := usecase.NewGoogleAPIUseCase(cfg.CredentialsBin)
 	dr := usecase.NewDriveAPI()

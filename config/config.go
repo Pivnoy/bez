@@ -6,12 +6,8 @@ import (
 )
 
 type Config struct {
-	AppPort string `env:"APP_PORT" envDefault:"9000"`
-	Host           string `env:"HOST" envDefault:"localhost"`
-	Port           int    `env:"PORT" envDefault:"5432"`
-	User           string `env:"USR" envDefault:"postgres"`
-	Password       string `env:"PASSWORD" envDefault:"postgres"`
-	DbName         string `env:"DBNAME" envDefault:"postgres"`
+	AppPort        string `env:"APP_PORT" envDefault:"9000"`
+	PostgresUrl    string `env:"POSTGRES_URL" envDefault:"postgresql://postgres:postgres@localhost:5432/postgres"`
 	CredentialsBin []byte
 }
 
