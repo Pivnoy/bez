@@ -29,6 +29,8 @@ func Run(cfg *config.Config) {
 	dr := usecase.NewDriveAPI()
 	us := usecase.NewUserUseCase(usRp)
 
+	//init databases here
+
 	router := gin.New()
 	v1.NewRouter(router, ga, dr, us)
 

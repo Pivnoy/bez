@@ -5,7 +5,10 @@ import (
 )
 
 type FileTorrent struct {
-	ID             uuid.UUID `json:"id"`
-	Link           string    `json:"link"`
-	DownloadNumber uint64    `json:"download_number"`
+	ID         uuid.UUID `json:"id"`
+	FileName   string    `json:"file_name"`
+	FileType   string    `json:"file_type"`
+	FileID     string    `json:"file_id"`
+	Count      int64     `json:"count"`
+	OwnerEmail string    `json:"owner_email"`
 }
