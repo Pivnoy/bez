@@ -7,6 +7,7 @@ import (
 	"bez/internal/usecase/repo"
 	"bez/pkg/httpserver"
 	"bez/pkg/postgres"
+	"context"
 	"log"
 	"os"
 	"os/signal"
@@ -24,12 +25,21 @@ func Run(cfg *config.Config) {
 	}
 
 	usRp := repo.NewUserRepo(pg)
+	flRp := repo.NewFileTorrentRepo(pg)
+	srRp := repo.NewServiceRepo(pg)
 
 	ga := usecase.NewGoogleAPIUseCase(cfg.CredentialsBin)
 	dr := usecase.NewDriveAPI()
 	us := usecase.NewUserUseCase(usRp)
+	fl := usecase.NewFileUseCase(flRp)
+	sr := usecase.NewServiceUseCase(srRp)
 
-	//init databases here
+	ld := usecase.NewLoadUseCase(fl, sr, ga, dr)
+	err = ld.Preload(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	router := gin.New()
 	v1.NewRouter(router, ga, dr, us)

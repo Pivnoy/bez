@@ -32,3 +32,11 @@ func (d *DriveAPIUseCase) GetPersonalInfo(srv *drive.Service) (*entity.PersonalI
 		Email:       res.User.EmailAddress,
 	}, nil
 }
+
+func (d *DriveAPIUseCase) GetFileList(srv *drive.Service) ([]*drive.File, error) {
+	fl, err := srv.Files.List().Fields("files(id, name)").Do()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get files: %v", err)
+	}
+	return fl.Files, nil
+}

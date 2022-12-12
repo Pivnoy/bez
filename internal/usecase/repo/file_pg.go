@@ -16,7 +16,7 @@ func NewFileTorrentRepo(pg *postgres.Postgres) *FileTorrentRepo {
 }
 
 func (f *FileTorrentRepo) StoreFile(ctx context.Context, fl entity.FileTorrent) error {
-	query := `INSERT INTO file() VALUES($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO file(id, file_name, file_type, file_id, count, owner_email) VALUES($1, $2, $3, $4, $5, $6)`
 
 	rows, err := f.Pool.Query(ctx, query, fl.ID, fl.FileName, fl.FileType, fl.FileID, fl.Count, fl.OwnerEmail)
 	if err != nil {

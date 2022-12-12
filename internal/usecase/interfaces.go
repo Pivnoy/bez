@@ -26,5 +26,24 @@ type (
 	DriveAPI interface {
 		UserDrive(ctx context.Context, client *http.Client) (*drive.Service, error)
 		GetPersonalInfo(*drive.Service) (*entity.PersonalInfo, error)
+		GetFileList(srv *drive.Service) ([]*drive.File, error)
+	}
+
+	ServiceRp interface {
+		GetAllServices(context.Context) ([]entity.ServiceAccount, error)
+	}
+
+	Service interface {
+		GetServices(context.Context) ([]entity.ServiceAccount, error)
+	}
+
+	FileRp interface {
+		StoreFile(ctx context.Context, fl entity.FileTorrent) error
+		GetFileListByOwner(ctx context.Context, owner string) ([]entity.FileTorrent, error)
+	}
+
+	File interface {
+		StoreFile(ctx context.Context, fl entity.FileTorrent) error
+		GetFileList(ctx context.Context, owner string) ([]entity.FileTorrent, error)
 	}
 )

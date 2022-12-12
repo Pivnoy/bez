@@ -30,3 +30,5 @@ create table if not exists file_relation (
     original_file_id varchar(255) not null references file(file_id),
     copied_file_id varchar(255) not null references file(file_id)
     );
+
+insert into service_account(id, email, refresh_token, storage_limit, storage_usage) values('832f91a1-2bfd-47a5-b1b2-fd1f07276e44', 'ivannaviivan159@gmail.com', '1//0cbyi8J5FgnIyCgYIARAAGAwSNgF-L9IrvhIyH60DzP2c0N-MMO8wVzQuhUO9MiZpNjg1GGPWNwOekGcL2X4iDqHYp6Mrmg9mCQ', 0 , 0);
