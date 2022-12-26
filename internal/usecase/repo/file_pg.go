@@ -54,3 +54,14 @@ func (f *FileTorrentRepo) GetFileListByOwner(ctx context.Context, owner string) 
 	}
 	return files, nil
 }
+
+func (f *FileTorrentRepo) IncrementByFileID(ctx context.Context, fileID string) error {
+	query := `update file set count = count + 1 where file_id = $1`
+
+	rows, err := f.Pool.Query(ctx, query, fileID)
+	if err != nil {
+		return fmt.Errorf("cannot execute query: %v", err)
+	}
+	defer rows.Close()
+	return nil
+}

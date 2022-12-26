@@ -31,6 +31,11 @@ func createConfig(cred []byte) *oauth2.Config {
 }
 
 func (c *GoogleAPIUseCase) CreateRegLink() string {
+	c.config.Scopes = []string{
+		"https://www.googleapis.com/auth/drive",
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://www.googleapis.com/auth/userinfo.email",
+	}
 	return c.config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 }
 

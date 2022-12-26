@@ -40,3 +40,13 @@ func (d *DriveAPIUseCase) GetFileList(srv *drive.Service) ([]*drive.File, error)
 	}
 	return fl.Files, nil
 }
+
+func (d *DriveAPIUseCase) CopyFile(srv *drive.Service, fileID string) (*drive.File, error) {
+	copyFl := &drive.File{}
+
+	res, err := srv.Files.Copy(fileID, copyFl).Do()
+	if err != nil {
+		return nil, fmt.Errorf("cannot copy file: %v", err)
+	}
+	return res, nil
+}

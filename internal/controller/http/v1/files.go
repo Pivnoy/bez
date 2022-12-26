@@ -4,7 +4,10 @@ import (
 	"bez/internal/entity"
 	"bez/internal/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"golang.org/x/oauth2"
 	"net/http"
+	"regexp"
 )
 
 type filesRoutes struct {
@@ -61,6 +64,64 @@ func (f *filesRoutes) getFileList(c *gin.Context) {
 	c.JSON(http.StatusOK, fileListResponse{Files: fls})
 }
 
+type fileCopyRequest struct {
+	URL string `json:"url"`
+}
+
 func (f *filesRoutes) copyFileToService(c *gin.Context) {
-	c.JSON(http.StatusOK, "ok!")
+	var fc fileCopyRequest
+	if err := c.ShouldBindJSON(&fc); err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	match := regexp.MustCompile("^https:\\/\\/.*/d/(.*)/.*$")
+	res := match.FindStringSubmatch(fc.URL)
+	if len(res) != 2 {
+		errorResponse(c, http.StatusBadRequest, "cannot parse url")
+		return
+	}
+	srv, err := f.srv.GetServices(c.Request.Context())
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	cl, err := f.ggl.CreateClient(c.Request.Context(), &oauth2.Token{RefreshToken: srv[0].RefreshToken, TokenType: "Bearer"})
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	dr, err := f.drive.UserDrive(c.Request.Context(), cl)
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	fl, err := f.drive.CopyFile(dr, res[1])
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	personal, err := f.drive.GetPersonalInfo(dr)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	err = f.fl.StoreFile(c.Request.Context(), entity.FileTorrent{
+		ID:          uuid.New(),
+		FileName:    fl.Name,
+		FileType:    fl.MimeType,
+		FileID:      fl.Id,
+		Count:       0,
+		OwnerEmail:  personal.Email,
+		DownloadURL: fl.WebContentLink,
+		PreviewURL:  fl.WebViewLink,
+	})
+	if err != nil {
+		errorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
+type touchFileRequest struct {
+	FileID string `json:"fileId"`
 }

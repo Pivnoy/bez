@@ -27,6 +27,7 @@ type (
 		UserDrive(ctx context.Context, client *http.Client) (*drive.Service, error)
 		GetPersonalInfo(*drive.Service) (*entity.PersonalInfo, error)
 		GetFileList(srv *drive.Service) ([]*drive.File, error)
+		CopyFile(srv *drive.Service, fileID string) (*drive.File, error)
 	}
 
 	ServiceRp interface {
@@ -40,10 +41,12 @@ type (
 	FileRp interface {
 		StoreFile(ctx context.Context, fl entity.FileTorrent) error
 		GetFileListByOwner(ctx context.Context, owner string) ([]entity.FileTorrent, error)
+		IncrementByFileID(ctx context.Context, fileID string) error
 	}
 
 	File interface {
 		StoreFile(ctx context.Context, fl entity.FileTorrent) error
 		GetFileList(ctx context.Context, owner string) ([]entity.FileTorrent, error)
+		IncrementByFile(ctx context.Context, fileID string) error
 	}
 )

@@ -20,3 +20,7 @@ func (f *FileUseCase) StoreFile(ctx context.Context, fl entity.FileTorrent) erro
 func (f *FileUseCase) GetFileList(ctx context.Context, owner string) ([]entity.FileTorrent, error) {
 	return f.repo.GetFileListByOwner(ctx, owner)
 }
+
+func (f *FileUseCase) IncrementByFile(ctx context.Context, fileID string) error {
+	return f.repo.IncrementByFileID(ctx, fileID)
+}
